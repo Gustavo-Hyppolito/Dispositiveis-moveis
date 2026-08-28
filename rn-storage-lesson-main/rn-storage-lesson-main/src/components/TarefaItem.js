@@ -1,20 +1,72 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from "react";
+
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Componente responsável por renderizar UM item da lista de tarefas.
-// Recebe a tarefa e duas funções (callbacks) vindas do componente pai (a screen)
-// para avisar quando o usuário quer concluir ou excluir essa tarefa.
-export default function TarefaItem({ tarefa, aoAlternarConcluida, aoExcluir }) {
+export default function TarefaItem({
+  tarefa,
+  aoAlternarConcluida,
+  aoExcluir,
+  aoEditar,
+}) {
+  const [editando, setEditando] = useState(false);
+  const [novoTexto, setNovoTexto] = useState(tarefa.texto);
+
+  const salvarEdicao = () => {
+    if (novoTexto.trim() === "") {
+      return;
+    }
+
+    aoEditar(tarefa.id, novoTexto);
+    setEditando(false);
+  };
+
   return (
     <View style={styles.item}>
-      {/* Ao tocar no texto, a tarefa alterna entre concluída/pendente */}
-      <TouchableOpacity
-        style={styles.textoContainer}
-        onPress={() => aoAlternarConcluida(tarefa.id)}
-      >
-        <Text style={[styles.texto, tarefa.concluida && styles.textoConcluido]}>
-          {tarefa.texto}
-        </Text>
-      </TouchableOpacity>
+      {editando ? (
+        <TextInput
+          style={styles.inputEditar}
+          value={novoTexto}
+          onChangeText={setNovoTexto}
+          autoFocus
+        />
+      ) : (
+        <TouchableOpacity
+          style={styles.textoContainer}
+          onPress={() => aoAlternarConcluida(tarefa.id)}
+        >
+          <Text
+            style={[
+              styles.texto,
+              tarefa.concluida && styles.textoConcluido,
+            ]}
+          >
+            {tarefa.texto}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {editando ? (
+        <TouchableOpacity
+          style={styles.botaoSalvar}
+          onPress={salvarEdicao}
+        >
+          <Text style={styles.textoBotao}>Salvar</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.botaoEditar}
+          onPress={() => setEditando(true)}
+        >
+          <Text style={styles.textoBotao}>Editar</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.botaoExcluir}
@@ -28,42 +80,82 @@ export default function TarefaItem({ tarefa, aoAlternarConcluida, aoExcluir }) {
 
 const styles = StyleSheet.create({
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginBottom: 10,
-    // Sombra leve só para destacar o card (funciona em iOS e Android)
-    shadowColor: '#000',
+
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+
     elevation: 2,
   },
+
   textoContainer: {
     flex: 1,
-    marginRight: 10,
+    marginRight: 8,
   },
+
   texto: {
     fontSize: 16,
-    color: '#222',
+    color: "#222",
   },
+
   textoConcluido: {
-    textDecorationLine: 'line-through',
-    color: '#999',
+    textDecorationLine: "line-through",
+    color: "#999",
   },
+
+  inputEditar: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
+
+  botaoEditar: {
+    backgroundColor: "#f39c12",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginRight: 6,
+  },
+
+  botaoSalvar: {
+    backgroundColor: "#27ae60",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginRight: 6,
+  },
+
   botaoExcluir: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: "#e74c3c",
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
   },
+
+  textoBotao: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+
   textoBotaoExcluir: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 12,
   },
 });
